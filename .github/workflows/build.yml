@@ -14,23 +14,20 @@ uses: actions/checkout@v4
 * name: Set up Go
 uses: actions/setup-go@v5
 with:
-go-version: '1.21'
+go-version: 'stable' # Автоматически выберет самую стабильную и свежую версию
 * name: Install dependencies
-run: go mod tidy
+run: |
+go mod tidy
 * name: Compile to WebAssembly
 run: |
 
-# Компилируем под целевую архитектуру WebAssembly / Javascript
+# Включаем принудительный запуск сборки, игнорируя некоторые сетевые ограничения платформ
 
+export CGO_ENABLED=0
 GOOS=js GOARCH=wasm go build -o openflux.wasm main.go
 
-* name: Get WASM Executable Helper
-run: | 
-
-cp "$(go env GOROOT)/misc/wasm/wasm_exec.js" ./
 * name: Upload Artifacts
 uses: actions/upload-artifact@v4
 with:
-name: openflux-wasm-files
-path: |
-openflux.wasm
+name: openflux-wasm-file
+path: openflux.wasm
