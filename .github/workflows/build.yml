@@ -5,7 +5,7 @@ workflow_dispatch:
 
 jobs:
 build-ios-bin:
-runs-on: macos-latest # Обязательно используем macOS-сервер для доступа к iOS SDK 
+runs-on: macos-latest 
 
 steps:
 
@@ -20,27 +20,24 @@ run: go mod tidy
 * name: Compile Native iOS Binary with CGO
 run: |
 
-### Находим официальный путь к iOS SDK в системе
+### Находим пути к iOS SDK и компилятору Clang
 
-export SDK_PATH=$(xcrun --sdk iphoneos --show-sdk-path) 
+SDK_PATH=$(xcrun --sdk iphoneos --show-sdk-path)
+CLANG_PATH=$(xcrun --sdk iphoneos --find clang) 
 
-### Находим путь к компилятору Clang от Apple
-
-export CLANG_PATH=$(xcrun --sdk iphoneos --find clang) 
-
-### Настраиваем окружение Go для сборки под iPhone
+### Настраиваем переменные окружения Go
 
 export CGO_ENABLED=1
 export GOOS=ios
 export GOARCH=arm64 
 
-### Передаем правильные флаги компилятору Apple (целевая ОС — iOS версии 14 и выше)
+### Передаем параметры компилятора Apple
 
 export CGO_CFLAGS="-isysroot $SDK_PATH -miphoneos-version-min=14.0"
 export CGO_LDFLAGS="-isysroot $SDK_PATH -miphoneos-version-min=14.0"
 export CC="$CLANG_PATH" 
 
-# Запускаем сборку исполняемого файла
+# Компилируем проект
 
 go build -o openflux-ios-cli main.go
 
