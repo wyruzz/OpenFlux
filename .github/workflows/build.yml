@@ -1,41 +1,34 @@
-name: Build OpenFlux for iOS Terminal (Binary)
+name: Build OpenFlux for iSH Terminal (Linux x86) 
 
 on:
-  workflow_dispatch:
+workflow_dispatch: 
 
 jobs:
-  build-ios-bin:
-    runs-on: macos-latest
+build-ish:
+runs-on: ubuntu-latest # Собираем на обычном Linux-сервере 
 
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
+steps:
 
-    - name: Set up Go
-      uses: actions/setup-go@v5
-      with:
-        go-version: 'stable'
+* name: Checkout repository
+uses: actions/checkout@v4
+* name: Set up Go
+uses: actions/setup-go@v5
+with:
+go-version: 'stable'
+* name: Install dependencies
+run: go mod tidy
+* name: Compile for iSH Emulator
+run: |
 
-    - name: Install dependencies
-      run: go mod tidy
+# Задаем архитектуру 386 (Intel x86 32-bit) под Alpine Linux внутри iSH
 
-    - name: Compile Native iOS Binary with CGO
-      run: |
-        SDK_PATH=$(xcrun --sdk iphoneos --show-sdk-path)
-        CLANG_PATH=$(xcrun --sdk iphoneos --find clang)
-        
-        export CGO_ENABLED=1
-        export GOOS=ios
-        export GOARCH=arm64
-        
-        export CGO_CFLAGS="-isysroot ${SDK_PATH} -miphoneos-version-min=14.0"
-        export CGO_LDFLAGS="-isysroot ${SDK_PATH} -miphoneos-version-min=14.0"
-        export CC="${CLANG_PATH}"
-        
-        go build -o openflux-ios-cli main.go
+export CGO_ENABLED=0
+export GOOS=linux
+export GOARCH=386
+go build -o openflux-ish main.go
 
-    - name: Upload Native Binary
-      uses: actions/upload-artifact@v4
-      with:
-        name: openflux-ios-binary
-        path: openflux-ios-cli
+* name: Upload iSH Binary
+uses: actions/upload-artifact@v4
+with:
+name: openflux-ish-binary
+path: openflux-ish
