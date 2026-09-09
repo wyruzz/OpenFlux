@@ -1,11 +1,11 @@
-name: Build OpenFlux for iOS Terminal (WASM) 
+name: Build OpenFlux for iOS Terminal (Binary) 
 
 on:
 workflow_dispatch: 
 
 jobs:
-build-wasm:
-runs-on: ubuntu-latest 
+build-ios-bin:
+runs-on: macos-latest # Используем Мак в облаке, чтобы был доступен iOS SDK 
 
 steps:
 
@@ -14,20 +14,23 @@ uses: actions/checkout@v4
 * name: Set up Go
 uses: actions/setup-go@v5
 with:
-go-version: 'stable' # Автоматически выберет самую стабильную и свежую версию
+go-version: 'stable'
 * name: Install dependencies
-run: |
-go mod tidy
-* name: Compile to WebAssembly
+run: go mod tidy
+* name: Compile Native iOS Binary
 run: |
 
-# Включаем принудительный запуск сборки, игнорируя некоторые сетевые ограничения платформ
+### Компилируем чистый бинарник под архитектуру процессоров iPhone (arm64)
+
+# Отключаем CGO для статической линковки
 
 export CGO_ENABLED=0
-GOOS=js GOARCH=wasm go build -o openflux.wasm main.go
+export GOOS=ios
+export GOARCH=arm64
+go build -o openflux-ios-cli main.go
 
-* name: Upload Artifacts
+* name: Upload Native Binary
 uses: actions/upload-artifact@v4
 with:
-name: openflux-wasm-file
-path: openflux.wasm
+name: openflux-ios-binary
+path: openflux-ios-cli
