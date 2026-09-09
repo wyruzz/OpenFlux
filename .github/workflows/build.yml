@@ -19,28 +19,18 @@ go-version: 'stable'
 run: go mod tidy
 * name: Compile Native iOS Binary with CGO
 run: |
-
-### Находим пути к iOS SDK и компилятору Clang
-
 SDK_PATH=$(xcrun --sdk iphoneos --show-sdk-path)
-CLANG_PATH=$(xcrun --sdk iphoneos --find clang) 
-
-### Настраиваем переменные окружения Go
+CLANG_PATH=$(xcrun --sdk iphoneos --find clang)
 
 export CGO_ENABLED=1
 export GOOS=ios
-export GOARCH=arm64 
+export GOARCH=arm64
 
-### Передаем параметры компилятора Apple
-
-export CGO_CFLAGS="-isysroot $SDK_PATH -miphoneos-version-min=14.0"
-export CGO_LDFLAGS="-isysroot $SDK_PATH -miphoneos-version-min=14.0"
-export CC="$CLANG_PATH" 
-
-# Компилируем проект
+export CGO_CFLAGS="-isysroot ${SDK_PATH} -miphoneos-version-min=14.0"
+export CGO_LDFLAGS="-isysroot ${SDK_PATH} -miphoneos-version-min=14.0"
+export CC="${CLANG_PATH}"
 
 go build -o openflux-ios-cli main.go
-
 * name: Upload Native Binary
 uses: actions/upload-artifact@v4
 with:
